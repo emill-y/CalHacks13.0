@@ -69,6 +69,9 @@ interface JsonCall<T> {
 }
 
 let structuredSupported = true;
+// Short, latency-sensitive JSON calls: turn thinking off where the model supports it
+// (Sonnet 5.5: {type:"between_tools"}). Dropped automatically if the API rejects it.
+let thinkingOffSupported = process.env.ANTHROPIC_THINKING !== "on" && /^claude-sonnet-5-5/.test(MODEL);
 
 async function once<T>(call: JsonCall<T>, extra?: string): Promise<T> {
   const c = getClient();
@@ -78,6 +81,7 @@ async function once<T>(call: JsonCall<T>, extra?: string): Promise<T> {
     max_tokens: call.maxTokens ?? 4000,
     system: call.system,
     messages: [{ role: "user", content }],
+    ...(thinkingOffSupported ? ({ thinking: { type: "between_tools" } } as unknown as object) : {}),
     output_config: {
       effort: EFFORT,
       ...(call.jsonSchema && structuredSupported
@@ -89,6 +93,10 @@ async function once<T>(call: JsonCall<T>, extra?: string): Promise<T> {
   try {
     res = await c.messages.create(body, { timeout: call.timeoutMs ?? 30_000, signal: call.signal });
   } catch (e) {
+    if (e instanceof Anthropic.BadRequestError && thinkingOffSupported) {
+      thinkingOffSupported = false;
+      return once(call, extra);
+    }
     if (e instanceof Anthropic.BadRequestError && body.output_config?.format) {
       // Older model/API without structured outputs: fall back to prompt-only JSON.
       structuredSupported = false;

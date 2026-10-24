@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: thisbut
+    runtime: docker
+    plan: standard # >= 2 GB RAM for CLIP
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false

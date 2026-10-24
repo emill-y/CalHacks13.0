@@ -1,0 +1,9 @@
+node_modules
+.next
+.data
+.cache
+models
+.git
+*.log
+.env*
+eval-results.json.bak

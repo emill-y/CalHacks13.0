@@ -12,3 +12,4 @@ next-env.d.ts
 npm-debug.log*
 .DS_Store
 .vercel
+.sandbox-ca.crt

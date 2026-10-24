@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { ModelError, type ImageInput } from "./anthropic";
+import { hasApiKey, ModelError, type ImageInput } from "./anthropic";
 import { CatalogError, getEmbedding, getProduct, readProductImage } from "./catalog";
 import { embedImage } from "./clip";
 import { parseEdit } from "./parse";
@@ -29,6 +29,9 @@ export async function runSearch(
   emit: (e: SearchEvent) => void,
   opts: { verifier?: VerifierFn; signal?: AbortSignal } = {},
 ): Promise<Extract<SearchEvent, { stage: "done" }>> {
+  if (!input.spec && !hasApiKey() && !opts.verifier) {
+    throw new ModelError("ANTHROPIC_API_KEY is not set on the server.", "missing_api_key");
+  }
   const t0 = Date.now();
   const timings: Record<string, number> = {};
   let source: ImageInput;
