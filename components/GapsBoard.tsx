@@ -55,7 +55,7 @@ export function GapsBoard() {
                 contentStyle={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, color: "var(--ink)" }}
               />
               <Bar dataKey="demo" stackId="a" name="demo data" fill="#a39e94" fillOpacity={0.45} isAnimationActive={false} />
-              <Bar dataKey="live" stackId="a" name="live" fill="#ff5a2a" radius={[0, 6, 6, 0]} isAnimationActive={false} />
+              <Bar dataKey="live" stackId="a" name="live" fill="#f0479a" radius={[0, 6, 6, 0]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -245,6 +245,7 @@ async function runSearch({ editText, priorSpec, spec }) {
   if (!editText.trim() && !spec) return setError("Tell us what to change, e.g. “without the ribbon”.");
   state.busy = true;
   $("findBtn").disabled = true;
+  $("findBtn").textContent = "Finding…";
   setError("");
   show("results", false);
   try {
@@ -278,6 +279,7 @@ async function runSearch({ editText, priorSpec, spec }) {
     show("indexBar", false);
     state.busy = false;
     $("findBtn").disabled = false;
+    $("findBtn").textContent = "Find my version";
   }
 }
 
@@ -316,10 +318,16 @@ function card(r) {
   const missed = r.checks.filter((c) => !c.pass && !isKeep(c.text));
   const reason = el("div", { class: "muted small" });
   const open = () => chrome.tabs.create({ url: productHref(p) });
+  const isMatch = r.allPass && !r.unverified;
   return el(
     "div",
     { class: "card" },
-    el("img", { src: productImg(p), alt: p.caption || p.name, loading: "lazy", onclick: open }),
+    el(
+      "div",
+      { class: "photo", onclick: open },
+      el("img", { src: productImg(p), alt: p.caption || p.name, loading: "lazy" }),
+      r.unverified ? null : el("span", { class: `badge ${isMatch ? "" : "close"}` }, isMatch ? "✓ Match" : "Close"),
+    ),
     el(
       "div",
       { class: "body" },
@@ -342,7 +350,7 @@ function card(r) {
         ),
       ),
       reason,
-      el("button", { class: "small", onclick: open }, "Open ↗"),
+      el("button", { onclick: open }, "Shop it ↗"),
     ),
   );
 }

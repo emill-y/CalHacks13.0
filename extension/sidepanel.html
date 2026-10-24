@@ -8,8 +8,11 @@
 </head>
 <body>
   <header>
-    <div class="logo">This<span>But</span></div>
-    <button id="settingsBtn" class="ghost" title="Settings" aria-label="Settings">⚙</button>
+    <div class="topbar">
+      <div class="logo">this,<span>but…</span></div>
+      <button id="settingsBtn" class="ghost" title="Settings" aria-label="Settings">⚙</button>
+    </div>
+    <div class="promo">Every result checked against every edit ✦</div>
   </header>
 
   <section id="settings" hidden>
@@ -20,8 +23,9 @@
 
   <main>
     <div id="empty" class="empty">
+      <span class="tag">New in</span>
       <h1>This, <em>but…</em></h1>
-      <p>Hover any product photo and click <b>This, but…</b> — or right-click an image → <b>This, but…</b>.</p>
+      <p>Hover any product photo and tap <b>This, but…</b> — or right-click an image → <b>This, but…</b>.</p>
       <p class="muted small">Works on any shop. On Shopify stores it searches that store’s whole catalog; elsewhere, the products on the page.</p>
     </div>
 
@@ -44,7 +48,7 @@
     <form id="editForm" hidden>
       <textarea id="edit" rows="2" placeholder="…but without the ribbon"></textarea>
       <div class="chips" id="examples"></div>
-      <button type="submit" id="findBtn" class="primary">Find it</button>
+      <button type="submit" id="findBtn" class="primary">Find my version</button>
     </form>
 
     <ol id="steps" class="steps" hidden>
@@ -58,7 +62,7 @@
       <div class="specrow"><span class="label">Your edits</span><span id="specChips"></span></div>
       <div class="meta small"><span id="discarded" class="ok"></span><span id="timing" class="muted"></span></div>
       <div id="unverified" class="notice" hidden>The checker didn’t finish in time — showing similar items, none labeled as matches.</div>
-      <h2>Matches <span id="matchCount" class="muted"></span></h2>
+      <h2>Matches <span id="matchCount" class="accent"></span></h2>
       <p class="muted small">Passed every edit you asked for</p>
       <div id="matches" class="grid"></div>
       <div id="wish"></div>

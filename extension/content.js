@@ -12,11 +12,11 @@
   host.style.cssText = "position:fixed;z-index:2147483647;top:0;left:0;display:none;";
   const root = host.attachShadow({ mode: "closed" });
   root.innerHTML = `<style>
-    button{all:initial;font:600 13px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;
-      background:#141414;color:#fff;border-radius:999px;padding:9px 13px 9px 11px;box-shadow:0 6px 20px rgba(0,0,0,.28);
-      display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:transform .12s ease}
-    button:hover{transform:scale(1.05)} i{font-style:italic;color:#ff6a3d;font-family:Georgia,serif;font-size:14px}
-  </style><button type="button" title="Find this with your edits — ThisBut"><span>This,</span><i>but…</i></button>`;
+    button{all:initial;cursor:pointer;background:#ff6fb5;color:#fff;padding:10px 14px;box-shadow:0 6px 18px rgba(0,0,0,.18);
+      font:italic 900 12px/1 "Arial Black","Avenir Next Heavy","Helvetica Neue",sans-serif;letter-spacing:.06em;text-transform:uppercase;
+      display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .12s ease,transform .12s ease}
+    button:hover{background:#111;transform:translateY(-1px)} span.star{font-style:normal}
+  </style><button type="button" title="Find this with your edits — ThisBut"><span class="star">✦</span>This, but…</button>`;
   const btn = root.querySelector("button");
   (document.body || document.documentElement).appendChild(host);
 
@@ -48,7 +48,7 @@
 
   function place(img) {
     const r = img.getBoundingClientRect();
-    host.style.left = `${Math.max(4, r.right - 128)}px`;
+    host.style.left = `${Math.max(4, r.right - 150)}px`;
     host.style.top = `${Math.max(4, r.top + 10)}px`;
     host.style.display = "block";
   }
