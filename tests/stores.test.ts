@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { categoryFromText, isNonApparelTitle } from "../lib/spec";
-import { storeIdFor } from "../lib/stores";
+import { imageKey, storeIdFor } from "../lib/stores";
 
 describe("store catalog classification (real Shopify titles)", () => {
   it("maps product titles to the fixed category list", () => {
@@ -29,6 +29,11 @@ describe("store catalog classification (real Shopify titles)", () => {
     expect(isNonApparelTitle("Platform Knee High Boots")).toBe(true);
     expect(isNonApparelTitle("Edikted Glow Rhinestone Hoodie")).toBe(false);
     expect(isNonApparelTitle("Ilen Polka Dot Wrap Top")).toBe(false);
+  });
+
+  it("treats the same photo at different sizes as one product", () => {
+    expect(imageKey("https://cdn.shopify.com/s/files/a.jpg?v=1&width=600")).toBe(imageKey("https://cdn.shopify.com/s/files/a.jpg?v=1"));
+    expect(imageKey("https://cdn.shopify.com/s/files/a.jpg")).not.toBe(imageKey("https://cdn.shopify.com/s/files/b.jpg"));
   });
 
   it("scopes Shopify catalogs per host and page catalogs per page", () => {

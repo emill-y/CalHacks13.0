@@ -17,7 +17,6 @@ const state = {
   tabId: null,
   tabUrl: "",
   source: null, // { imageUrl, title, pageUrl }
-  scope: "store",
   store: null, // { storeId, count, kind, origin }
   lastSpec: null,
   busy: false,
@@ -125,7 +124,6 @@ function setSource(src) {
   state.lastSpec = null;
   show("empty", !src);
   show("sourceCard", Boolean(src));
-  show("scope", Boolean(src));
   show("editForm", Boolean(src));
   if (!src) {
     show("storeStatus", false);
@@ -134,7 +132,6 @@ function setSource(src) {
   $("sourceImg").src = src.imageUrl;
   $("sourceTitle").textContent = src.title || "Selected product";
   $("sourceHost").textContent = hostOf(src.pageUrl);
-  $("scopeStore").textContent = `This store (${hostOf(src.pageUrl) || "page"})`;
   show("results", false);
   setError("");
   $("edit").focus();
@@ -152,14 +149,7 @@ chrome.storage.session.onChanged.addListener((changes) => {
 chrome.tabs.onActivated.addListener(loadActiveTab);
 chrome.tabs.onUpdated.addListener((id, info) => id === state.tabId && info.status === "complete" && loadActiveTab());
 
-// ---------- scope + store indexing ----------
-for (const b of document.querySelectorAll("#scope button")) {
-  b.onclick = () => {
-    state.scope = b.dataset.scope;
-    document.querySelectorAll("#scope button").forEach((x) => x.classList.toggle("on", x === b));
-    refreshStoreStatus();
-  };
-}
+// ---------- store indexing ----------
 
 async function sendToTab(msg) {
   try {
@@ -173,9 +163,8 @@ async function sendToTab(msg) {
 
 async function refreshStoreStatus() {
   state.store = null;
-  if (!state.source || state.scope !== "store") {
-    show("storeStatus", Boolean(state.source));
-    $("storeStatus").textContent = state.source ? "Searching the ThisBut demo catalog (3,000 items)." : "";
+  if (!state.source) {
+    show("storeStatus", false);
     return;
   }
   show("storeStatus", true);
@@ -281,8 +270,7 @@ async function runSearch({ editText, priorSpec, spec }) {
   setError("");
   show("results", false);
   try {
-    let storeId;
-    if (state.scope === "store") storeId = (await indexStore()).storeId;
+    const { storeId } = await indexStore();
     show("steps", true);
     setStep("parse");
     const res = await fetch(server("/api/search"), {

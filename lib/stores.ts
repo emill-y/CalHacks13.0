@@ -57,7 +57,19 @@ function file(id: string) {
   return path.join(DIR, `${id.replace(/[^a-z0-9.~_-]/gi, "_")}.json`);
 }
 
-function build(id: string, origin: string, kind: StoreCatalog["kind"], items: StoreItem[]): StoreCatalog {
+/** Same photo at another size/format (?width=600, ?v=…) counts as the same product. */
+export function imageKey(url: string): string {
+  try {
+    const u = new URL(url);
+    return (u.host + u.pathname).toLowerCase();
+  } catch {
+    return url;
+  }
+}
+
+function build(id: string, origin: string, kind: StoreCatalog["kind"], all: StoreItem[]): StoreCatalog {
+  const seen = new Set<string>();
+  const items = all.filter((i) => !seen.has(imageKey(i.imageUrl)) && seen.add(imageKey(i.imageUrl)));
   const embeddings = new Float32Array(items.length * EMBED_DIM);
   items.forEach((it, i) => embeddings.set(it.embedding, i * EMBED_DIM));
   return {
@@ -189,7 +201,7 @@ export async function indexStore(
   const byUrl = new Map([...(prev?.items.values() ?? [])].map((i) => [i.imageUrl, i]));
   const seen = new Set<string>();
   const wanted = input.items
-    .filter((i) => i.image && !seen.has(i.image) && seen.add(i.image))
+    .filter((i) => i.image && !seen.has(imageKey(i.image)) && seen.add(imageKey(i.image)))
     .filter((i) => !isNonApparelTitle(i.title || ""))
     .slice(0, MAX_STORE_ITEMS);
 

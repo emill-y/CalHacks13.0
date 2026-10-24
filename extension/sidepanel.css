@@ -59,10 +59,6 @@ textarea::placeholder { color: #b5b5b5; font-style: italic; }
 .title { font: 500 15px/1.3 var(--sans); letter-spacing: 0.04em; }
 #sourceHost { text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px; }
 
-/* scope toggle (like a size selector) */
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.seg button { padding: 11px 6px; font-size: 11px; border-color: #cfcfcf; }
-.seg button.on { border-color: var(--ink); background: var(--ink); color: #fff; }
 .bar { height: 3px; background: var(--pink-soft); overflow: hidden; } .bar div { height: 100%; width: 0; background: var(--pink); transition: width 0.2s; }
 
 #editForm { display: grid; gap: 10px; }

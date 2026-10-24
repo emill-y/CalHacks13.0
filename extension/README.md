@@ -16,7 +16,6 @@ The panel finds the **whole store's catalog** on its own, trying in order:
 
 Products visible on the current page are always merged in. Up to 400 products are indexed by default (⚙ to change).
 The first search on a store takes ~20–90 s; after that the store is cached and searches take ~10 s.
-A toggle switches to the built-in 3,000-item ThisBut catalog instead.
 
 Clicking a result opens the product on the store's own site. When nothing matches, save a Wish.
 
