@@ -1,3 +1,4 @@
+import { guard } from "@/lib/guard";
 import { logEvent } from "@/lib/events";
 import { EditSpecSchema } from "@/lib/spec";
 import { getStore } from "@/lib/store";
@@ -15,6 +16,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const blocked = await guard(req, "wish");
+  if (blocked) return blocked;
   const parsed = NewWishSchema.safeParse(await req.json().catch(() => null));
   const spec = EditSpecSchema.safeParse(parsed.success ? parsed.data.spec : null);
   if (!parsed.success || !spec.success) {

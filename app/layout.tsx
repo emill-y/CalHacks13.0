@@ -17,6 +17,7 @@ const themeScript = `try{var t=localStorage.getItem("tb-theme");if(t)document.do
 
 const NAV = [
   { href: "/", label: "Shop" },
+  { href: "/extension", label: "Extension" },
   { href: "/wishes", label: "My Wishes" },
   { href: "/merchant/gaps", label: "Merchant" },
   { href: "/privacy", label: "Privacy" },

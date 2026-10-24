@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { guard } from "@/lib/guard";
 import { errorPayload } from "@/lib/search";
 import { getStoreCatalog, indexStore, MAX_STORE_ITEMS, storeIdFor, type StoreKind } from "@/lib/stores";
 
@@ -35,6 +36,8 @@ export async function GET(req: Request) {
 
 /** POST a store's product list; streams NDJSON progress while photos are fetched + embedded. */
 export async function POST(req: Request) {
+  const blocked = await guard(req, "index");
+  if (blocked) return blocked;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: `Invalid store payload: ${parsed.error.message.slice(0, 200)}` }, { status: 400 });
   const enc = new TextEncoder();

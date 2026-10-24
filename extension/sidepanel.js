@@ -3,7 +3,7 @@
 
 const $ = (id) => document.getElementById(id);
 const EXAMPLES = ["without the ribbon", "in black", "longer sleeves", "under $50"];
-const DEFAULTS = { serverUrl: "http://localhost:3000", maxItems: 400 };
+const DEFAULTS = { serverUrl: self.THISBUT_CONFIG?.serverUrl || "http://localhost:3000", maxItems: 400 };
 
 const KIND_LABEL = {
   shopify: "Shopify catalog",

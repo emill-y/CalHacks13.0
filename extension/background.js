@@ -1,8 +1,14 @@
 // ThisBut background service worker: context menu + opening the side panel with a source image.
 
-chrome.runtime.onInstalled.addListener(() => {
+importScripts("config.js");
+
+chrome.runtime.onInstalled.addListener((details) => {
   chrome.contextMenus.create({ id: "thisbut-image", title: "This, but…", contexts: ["image"] });
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+  if (details.reason === "install") {
+    // Short welcome/how-to page on the ThisBut server.
+    chrome.tabs.create({ url: `${self.THISBUT_CONFIG.serverUrl.replace(/\/+$/, "")}/extension?installed=1` });
+  }
 });
 
 function setSource(tabId, source) {

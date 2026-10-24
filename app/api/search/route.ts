@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { guard } from "@/lib/guard";
 import { logEvent } from "@/lib/events";
 import { errorPayload, runSearch } from "@/lib/search";
 import { EditSpecSchema } from "@/lib/spec";
@@ -29,6 +30,8 @@ export async function POST(req: Request) {
   } catch (e) {
     return Response.json({ error: `Bad request: ${(e as Error).message.slice(0, 200)}` }, { status: 400 });
   }
+  const blocked = await guard(req, "search", body.deviceId);
+  if (blocked) return blocked;
   if (!body.image && !body.productId && !body.imageUrl) {
     return Response.json({ error: "Provide an image, an imageUrl or a productId." }, { status: 400 });
   }

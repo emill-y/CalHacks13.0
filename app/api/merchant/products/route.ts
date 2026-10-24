@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import { z } from "zod";
+import { guard } from "@/lib/guard";
 import { addToCatalog } from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/categories";
 import { embedImage } from "@/lib/clip";
@@ -21,6 +22,8 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  const blocked = await guard(req, "merchant");
+  if (blocked) return blocked;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Image, name, price and category are required." }, { status: 400 });
   const b = parsed.data;

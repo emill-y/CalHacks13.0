@@ -19,7 +19,12 @@ The first search on a store takes ~20–90 s; after that the store is cached and
 
 Clicking a result opens the product on the store's own site. When nothing matches, save a Wish.
 
-## Install (Chrome, Edge, Brave, Arc)
+## Publish it for everyone
+
+See [`../PUBLISHING.md`](../PUBLISHING.md): host the server, run `npm run ext:pack -- --server https://…`, then upload
+the zip to the Chrome Web Store / Edge Add-ons. Listing images are in `store-assets/`.
+
+## Install for development (Chrome, Edge, Brave, Arc)
 
 1. Start the ThisBut server: `npm run dev` in the repo root, with `ANTHROPIC_API_KEY` in `.env.local`.
 2. Open `chrome://extensions` (Edge: `edge://extensions`) and turn on **Developer mode**.
