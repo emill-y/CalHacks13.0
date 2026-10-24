@@ -1,0 +1,9 @@
+{
+  "model": "Xenova/clip-vit-base-patch32",
+  "dtype": "fp32",
+  "dim": 512,
+  "count": 3000,
+  "normalized": true,
+  "order": "data/catalog.json",
+  "createdAt": "2026-10-24T06:53:30.351Z"
+}
