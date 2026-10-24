@@ -18,6 +18,7 @@ const Body = z.object({
   spec: EditSpecSchema.optional(),
   imageUrl: z.string().url().max(4000).optional(),
   sourceTitle: z.string().max(300).optional(),
+  sourcePageUrl: z.string().url().max(4000).optional(),
   store: z.string().max(200).optional(),
 });
 

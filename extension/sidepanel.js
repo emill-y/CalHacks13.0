@@ -245,6 +245,47 @@ async function indexStore(force = false) {
   return state.store;
 }
 
+// ---------- grab the clicked photo in the browser ----------
+// Store CDNs often refuse server-side downloads (403). The browser can see the image, so fetch it here,
+// or as a last resort crop it out of a screenshot of the visible tab.
+async function toJpegBase64(bitmap, crop) {
+  const sx = crop ? crop.x : 0, sy = crop ? crop.y : 0;
+  const sw = crop ? crop.w : bitmap.width, sh = crop ? crop.h : bitmap.height;
+  const scale = Math.min(1, 768 / Math.max(sw, sh));
+  const canvas = new OffscreenCanvas(Math.max(1, Math.round(sw * scale)), Math.max(1, Math.round(sh * scale)));
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.88 });
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+async function grabSourceImage() {
+  const url = state.source.imageUrl;
+  try {
+    const r = await fetch(url, { credentials: "include" });
+    if (r.ok) {
+      const blob = await r.blob();
+      if (blob.type.startsWith("image/") || blob.size > 1000) return await toJpegBase64(await createImageBitmap(blob));
+    }
+  } catch {}
+  try {
+    const rect = await sendToTab({ type: "thisbut:rect", imageUrl: url });
+    if (rect?.found && rect.w > 20 && rect.h > 20) {
+      const tab = await chrome.tabs.get(state.tabId);
+      const shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+      const bmp = await createImageBitmap(await (await fetch(shot)).blob());
+      const d = rect.dpr;
+      return await toJpegBase64(bmp, { x: Math.max(0, rect.x * d), y: Math.max(0, rect.y * d), w: Math.min(bmp.width, rect.w * d), h: Math.min(bmp.height, rect.h * d) });
+    }
+  } catch {}
+  return null; // fall back to letting the server fetch the URL
+}
+
 // ---------- search ----------
 EXAMPLES.forEach((ex) =>
   $("examples").append(
@@ -273,12 +314,16 @@ async function runSearch({ editText, priorSpec, spec }) {
     const { storeId } = await indexStore();
     show("steps", true);
     setStep("parse");
+    const imageData = await grabSourceImage();
     const res = await fetch(server("/api/search"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         deviceId: await deviceId(),
+        image: imageData || undefined,
+        mediaType: imageData ? "image/jpeg" : undefined,
         imageUrl: state.source.imageUrl,
+        sourcePageUrl: state.source.pageUrl,
         sourceTitle: state.source.title,
         editText,
         priorSpec,

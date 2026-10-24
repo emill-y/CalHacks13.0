@@ -14,11 +14,18 @@ function isPrivateHost(host: string): boolean {
   return false;
 }
 
+const BROWSER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
+
 /**
  * Fetch a public image URL (product photos from store pages) and normalize it to a JPEG.
  * Only http(s); private/loopback hosts are refused unless ALLOW_PRIVATE_FETCH=1 (local test shops).
  */
-export async function fetchImageJpeg(url: string, maxSide: number, opts: { timeoutMs?: number } = {}): Promise<Buffer> {
+export async function fetchImageJpeg(
+  url: string,
+  maxSide: number,
+  opts: { timeoutMs?: number; referer?: string } = {},
+): Promise<Buffer> {
   let u: URL;
   try {
     u = new URL(url);
@@ -29,7 +36,13 @@ export async function fetchImageJpeg(url: string, maxSide: number, opts: { timeo
   if (isPrivateHost(u.hostname) && process.env.ALLOW_PRIVATE_FETCH !== "1") throw new Error("Image host not allowed");
   const res = await fetch(u, {
     signal: AbortSignal.timeout(opts.timeoutMs ?? 12_000),
-    headers: { accept: "image/avif,image/webp,image/jpeg,image/png,image/*;q=0.8", "user-agent": "ThisBut/1.0 (+demo)" },
+    // Many store CDNs refuse non-browser clients or hotlinks without the store as referrer.
+    headers: {
+      accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9",
+      "user-agent": BROWSER_UA,
+      ...(opts.referer ? { referer: opts.referer } : {}),
+    },
     redirect: "follow",
   });
   if (!res.ok) throw new Error(`Image fetch failed (${res.status})`);

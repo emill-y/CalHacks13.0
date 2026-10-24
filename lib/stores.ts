@@ -219,7 +219,7 @@ export async function indexStore(
       reused++;
     } else {
       try {
-        fresh.push({ input: it, jpeg: await fetchImageJpeg(it.image, 384) });
+        fresh.push({ input: it, jpeg: await fetchImageJpeg(it.image, 384, { referer: `${input.origin}/` }) });
       } catch {
         skipped++;
       }

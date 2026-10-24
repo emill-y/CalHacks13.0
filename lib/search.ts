@@ -20,6 +20,8 @@ export interface SearchInput {
   spec?: EditSpec;
   /** Public image URL (browser extension: the product photo the shopper clicked). */
   imageUrl?: string;
+  /** Page the photo was on (sent as Referer when the server has to fetch imageUrl itself). */
+  sourcePageUrl?: string;
   /** Title of the clicked product, used as extra context for parsing. */
   sourceTitle?: string;
   /** Search this store catalog (indexed by the extension) instead of the built-in one. */
@@ -52,17 +54,18 @@ export async function runSearch(
     source = { data: (await readProductImage(p)).toString("base64"), mediaType: "image/jpeg" };
     sourceCaption = p.caption;
     vImgPromise = getEmbedding(p.id).then((v) => v ?? null);
-  } else if (input.imageUrl) {
-    const buf = await fetchImageJpeg(input.imageUrl, 768);
-    source = { data: buf.toString("base64"), mediaType: "image/jpeg" };
-    sourceCaption = input.sourceTitle;
-    vImgPromise = embedImage(buf);
   } else if (input.image) {
     let buf: Buffer = Buffer.from(input.image, "base64");
     if (buf.length > 8 * 1024 * 1024) throw new Error("Image too large (max 8 MB).");
     // Normalize (and re-cap at 768 px) in memory; never written to disk.
     buf = await sharp(buf).rotate().resize(768, 768, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
     source = { data: buf.toString("base64"), mediaType: "image/jpeg" };
+    sourceCaption = input.sourceTitle;
+    vImgPromise = embedImage(buf);
+  } else if (input.imageUrl) {
+    const buf = await fetchImageJpeg(input.imageUrl, 768, { referer: input.sourcePageUrl });
+    source = { data: buf.toString("base64"), mediaType: "image/jpeg" };
+    sourceCaption = input.sourceTitle;
     vImgPromise = embedImage(buf);
   } else {
     throw new Error("Provide an image, an imageUrl or a productId.");

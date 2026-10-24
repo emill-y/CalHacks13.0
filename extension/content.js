@@ -124,6 +124,30 @@
       reply({ ok: true });
       return false;
     }
+    if (msg?.type === "thisbut:rect") {
+      // Locate the clicked photo so the panel can crop it from a screenshot if the image can't be downloaded.
+      const key = (u) => {
+        try {
+          const x = new URL(u, location.href);
+          return x.host + x.pathname;
+        } catch {
+          return u;
+        }
+      };
+      const want = key(msg.imageUrl);
+      const img = [...document.images].find((i) => key(bestSrc(i)) === want || key(i.src) === want);
+      if (!img) {
+        reply({ found: false });
+        return false;
+      }
+      img.scrollIntoView({ block: "center", inline: "center" });
+      host.style.display = "none";
+      setTimeout(() => {
+        const r = img.getBoundingClientRect();
+        reply({ found: true, x: r.left, y: r.top, w: r.width, h: r.height, dpr: window.devicePixelRatio || 1 });
+      }, 350);
+      return true;
+    }
     if (msg?.type !== "thisbut:collect") return false;
     try {
       reply({ kind: "page", origin: location.origin, pageUrl: location.href, items: pageProducts(Math.min(msg.max || 120, 200)) });
