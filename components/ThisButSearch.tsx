@@ -263,7 +263,7 @@ export function ThisButSearch({ sourceProduct, compact }: { sourceProduct?: Prod
 
           <ResultSection
             title={`Matches${matches.length ? ` (${matches.length})` : ""}`}
-            subtitle="Passed every edit"
+            subtitle="Passed every edit you asked for"
             empty="Nothing passed every edit yet."
             results={matches}
           />
@@ -402,7 +402,7 @@ function ResultSection({
 
 function ResultCard({ r }: { r: VerifiedResult }) {
   const [open, setOpen] = useState<number | null>(null);
-  const missed = r.checks.filter((c) => !c.pass);
+  const missed = r.checks.filter((c) => !c.pass && !/^keeps\b/i.test(c.text));
   return (
     <div className="rise flex flex-col overflow-hidden rounded-2xl border border-line bg-card">
       <Link href={`/product/${r.product.id}`} className="block aspect-square bg-white">
@@ -427,10 +427,10 @@ function ResultCard({ r }: { r: VerifiedResult }) {
               onClick={() => setOpen(open === i ? null : i)}
               title={c.reason}
               className={`rounded-full px-2 py-0.5 text-left text-[11px] leading-4 ${
-                c.pass ? "bg-ok/10 text-ok" : "bg-miss/10 text-miss"
+                c.pass ? "bg-ok/10 text-ok" : /^keeps\b/i.test(c.text) ? "bg-soft text-muted" : "bg-miss/10 text-miss"
               }`}
             >
-              {c.pass ? "✓" : "✗"} {chipKind(c.text, c.pass)} {shortCheck(c.text)}
+              {c.pass ? "✓" : /^keeps\b/i.test(c.text) ? "≈" : "✗"} {chipKind(c.text, c.pass)} {shortCheck(c.text)}
             </button>
           ))}
         </div>
@@ -451,7 +451,7 @@ function ResultCard({ r }: { r: VerifiedResult }) {
 }
 
 function chipKind(text: string, pass: boolean) {
-  if (!pass) return "missed:";
+  if (!pass) return /^keeps\b/i.test(text) ? "differs:" : "missed:";
   return /^keeps\b/i.test(text) ? "kept:" : "changed:";
 }
 function shortCheck(text: string) {

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "eval": "tsx scripts/eval.ts",
+    "eval": "tsx --env-file-if-exists=.env.local scripts/eval.ts",
     "embed": "tsx scripts/embed.ts",
     "setup:model": "python3 scripts/fetch_model.py",
     "setup:catalog": "python3 scripts/prepare_catalog.py",

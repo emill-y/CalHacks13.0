@@ -95,6 +95,16 @@ export function alignChecks(expected: string[], got: Check[] | undefined): Check
   });
 }
 
+/** Implicit "keeps" are soft preferences; only the shopper's edits (+ garment type, price) gate a Match. */
+export function isEditCheck(c: Pick<Check, "text">): boolean {
+  return !/^keeps\b/i.test(c.text);
+}
+
+export function passesAllEdits(checks: Check[]): boolean {
+  const edits = checks.filter(isEditCheck);
+  return edits.length > 0 && edits.every((c) => c.pass);
+}
+
 export function rankResults(results: VerifiedResult[]): VerifiedResult[] {
   const passes = (r: VerifiedResult) => r.checks.filter((c) => c.pass).length;
   return [...results].sort(
@@ -169,7 +179,7 @@ export async function verify(
       return {
         product: s.product,
         checks: aligned,
-        allPass: aligned.length > 0 && aligned.every((c) => c.pass),
+        allPass: passesAllEdits(aligned),
         similarity: v.similarity,
         retrievalScore: s.score,
       };

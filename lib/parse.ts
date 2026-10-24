@@ -7,7 +7,7 @@ const SYSTEM = `You turn a shopper's reference photo plus an edit request into a
 
 Return ONLY a JSON object with these fields:
 - source: what the reference item IS. category is one of: ${CATEGORIES.join(", ")}. color is the main color word. pattern ("plain" if none). details: short noun phrases of notable features you can see (e.g. "bow at neckline", "puff sleeves", "buttons").
-- keep: the 1-3 most defining features of the source the shopper implicitly wants to keep (e.g. main color, sleeve length, overall silhouette) unless the edit changes them. Short, visually checkable noun phrases ("light blue color", "short sleeves"). Never list a feature that is being removed or changed. Do not over-constrain: small details are not keeps.
+- keep: at most 2 BROAD features of the source worth preserving (main color family, garment silhouette), unless the edit changes them. Never specific prints, trims or construction details (no "daisy pattern", "pintucks", "puff sleeves"). Never list a feature being removed or changed. These are soft preferences, not requirements.
 - remove: features to take away ("without the ribbon" -> ["ribbon"]). Use the simplest noun ("bow", "ribbon", "ruffles", "pockets", "hood", "print").
 - change: attribute -> new value pairs. Use attribute names color | length | sleeves | fit | pattern | neckline | material. Values: a color word ("black"), "longer"/"shorter" for length, "looser"/"tighter" for fit, "long"/"short"/"three-quarter"/"sleeveless" for sleeves.
 - add: features to add ("with pockets" -> ["pockets"]).

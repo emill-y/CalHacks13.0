@@ -151,10 +151,16 @@ function escapeRe(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** "bows" -> "bow", "pockets" -> "pocket" (keeps "dress", "sleeves" as-is) so labels group. */
+export function singular(t: string): string {
+  if (/(ss|us|is|sleeves|jeans|shorts|trousers|pants)$/.test(t) || t.length <= 3) return t;
+  return t.replace(/ies$/, "y").replace(/(ch|sh|x)es$/, "$1").replace(/s$/, "");
+}
 const uniq = (xs: string[]) => [...new Set(xs.map(normTerm).filter(Boolean))];
+const uniqParts = (xs: string[]) => [...new Set(xs.map((x) => singular(normTerm(x))).filter(Boolean))];
 
 export function fromWire(w: WireSpec): EditSpec {
-  const remove = uniq(w.remove);
+  const remove = uniqParts(w.remove);
   const change: Record<string, string> = {};
   for (const { attribute, value } of w.change) {
     if (attribute && value) change[normAttr(attribute)] = normTerm(value);
@@ -169,7 +175,7 @@ export function fromWire(w: WireSpec): EditSpec {
     keep: uniq(w.keep).filter((k) => !remove.includes(k)),
     remove,
     change,
-    add: uniq(w.add).filter((a) => !remove.includes(a)),
+    add: uniqParts(w.add).filter((a) => !remove.includes(a)),
     ...(w.maxPrice ? { maxPrice: w.maxPrice } : {}),
     targetCaption: positiveCaption(w.targetCaption, remove),
     label: "",

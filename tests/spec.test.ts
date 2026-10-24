@@ -75,6 +75,17 @@ describe("wire -> EditSpec", () => {
     expect(s.maxPrice).toBeUndefined();
   });
 
+  it("folds plurals so 'bow' and 'bows' are one edit", () => {
+    const s = fromWire({
+      source: { category: "sweater", color: "green", pattern: "plain", details: [] },
+      keep: [], remove: ["bow", "little bows"], change: [], add: ["pockets"], maxPrice: null,
+      targetCaption: "a green cable-knit sweater", label: "",
+    });
+    expect(s.remove).toEqual(["bow", "little bow"]);
+    expect(fromWire({ ...s, change: [], maxPrice: null, remove: ["bows", "Bow"] } as never).remove).toEqual(["bow"]);
+    expect(s.add).toEqual(["pocket"]);
+  });
+
   it("positiveCaption removes negated phrases", () => {
     expect(positiveCaption("white blouse without the ribbon", ["ribbon"])).toBe("white blouse");
   });

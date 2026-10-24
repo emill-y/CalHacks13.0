@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { Scored } from "../lib/retrieve";
 import type { Product } from "../lib/types";
-import { alignChecks, rankResults, verify, type VerifierFn } from "../lib/verify";
+import { alignChecks, passesAllEdits, rankResults, verify, type VerifierFn } from "../lib/verify";
 import { spec } from "./helpers";
 
 const catalog: Product[] = JSON.parse(fs.readFileSync("data/catalog.json", "utf8"));
@@ -28,7 +28,7 @@ describe("verifier integration (mocked model)", () => {
     expect(verified).toBe(true);
     const firstFail = results.findIndex((r) => !r.allPass);
     expect(results.slice(firstFail).every((r) => !r.allPass)).toBe(true);
-    for (const r of results) expect(r.allPass).toBe(r.checks.every((c) => c.pass));
+    for (const r of results) expect(r.allPass).toBe(r.checks.filter((c) => !c.text.startsWith("keeps")).every((c) => c.pass));
   });
 
   it("falls back to retrieval order marked unverified on timeout", async () => {
@@ -37,6 +37,13 @@ describe("verifier integration (mocked model)", () => {
     expect(verified).toBe(false);
     expect(results.every((r) => r.unverified && !r.allPass)).toBe(true);
     expect(results.map((r) => r.product.id)).toEqual(scored.map((s) => s.product.id));
+  });
+
+  it("gates a Match on the shopper's edits; implicit keeps are soft", () => {
+    const c = (text: string, pass: boolean) => ({ text, pass, reason: "" });
+    expect(passesAllEdits([c("is a blouse", true), c("keeps white color", false), c("has no bow", true)])).toBe(true);
+    expect(passesAllEdits([c("is a blouse", true), c("keeps white color", true), c("has no bow", false)])).toBe(false);
+    expect(passesAllEdits([c("keeps white color", true)])).toBe(false);
   });
 
   it("treats checks the model skipped as failures", () => {

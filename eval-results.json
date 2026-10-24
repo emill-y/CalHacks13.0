@@ -1,12 +1,18 @@
 {
-  "ranAt": "2026-10-24T07:02:49.301Z",
+  "ranAt": "2026-10-24T07:37:36.760Z",
   "summary": {
-    "mode": "retrieval-only",
-    "note": "ANTHROPIC_API_KEY not set: parse/verify skipped; specs derived from catalog captions.",
+    "mode": "full",
+    "model": "claude-sonnet-5-5",
     "queries": 10,
-    "groundTruthCleanAt16": 0.96875,
-    "sameCategoryAt16": 0.9875,
-    "medianLatencyMs": 30
+    "errors": 0,
+    "totalFullMatches": 100,
+    "queriesWith3PlusMatches": 9,
+    "verifierPassRate": 0.625,
+    "checkPassRate": 0.6837500000000001,
+    "groundTruthMatchPrecision": 0.986111111111111,
+    "medianLatencyMs": 12665,
+    "heroFullMatches": 10,
+    "heroLatencyMs": 13082
   },
   "rows": [
     {
@@ -14,28 +20,57 @@
       "source": "p1601",
       "sourceCaption": "blue floral fitted short-sleeve shirt with a bow and a ruffle",
       "edit": "without the bow",
-      "label": "Shirt · remove bow",
-      "targetCaption": "blue floral fitted short-sleeve shirt with a ruffle",
-      "latencyMs": 68,
-      "top16": [
-        "p0482",
-        "p2987",
-        "p0600",
-        "p0262",
-        "p2957",
-        "p2256",
-        "p1285",
-        "p2381",
-        "p1316",
-        "p2870",
-        "p0511",
-        "p0584",
-        "p1162",
-        "p2736",
-        "p1133",
-        "p0594"
+      "label": "Blouse · remove bow",
+      "spec": {
+        "source": {
+          "category": "Blouse",
+          "color": "blue",
+          "pattern": "floral daisy print",
+          "details": [
+            "black bow at neckline",
+            "puff sleeves",
+            "pintucked bib front",
+            "ruffle trim",
+            "buttons",
+            "cropped fit"
+          ]
+        },
+        "keep": [
+          "blue color",
+          "fitted cropped silhouette"
+        ],
+        "remove": [
+          "bow"
+        ],
+        "change": {},
+        "add": [],
+        "targetCaption": "a light blue floral short-sleeve cropped blouse with puff sleeves and a ruffled button-front bib",
+        "label": "Blouse · remove bow"
+      },
+      "verified": true,
+      "fullMatchCount": 10,
+      "verifierPassRate": 0.625,
+      "checkPassRate": 0.484375,
+      "latencyMs": 13082,
+      "timings": {
+        "parse": 2881,
+        "retrieve": 114,
+        "verify": 10087,
+        "total": 13082
+      },
+      "matches": [
+        "p0074",
+        "p1759",
+        "p2651",
+        "p1766",
+        "p0199",
+        "p1031",
+        "p1953",
+        "p2190",
+        "p1454",
+        "p1253"
       ],
-      "sameCategoryTop16": 1,
+      "gtMatchPrecision": 1,
       "gtTop16Clean": 1
     },
     {
@@ -43,28 +78,62 @@
       "source": "p0808",
       "sourceCaption": "black fitted top with a ribbon",
       "edit": "without the ribbon",
-      "label": "Top · remove ribbon",
-      "targetCaption": "black fitted top",
-      "latencyMs": 45,
-      "top16": [
+      "label": "Top · remove bow + remove ribbon",
+      "spec": {
+        "source": {
+          "category": "Top",
+          "color": "black",
+          "pattern": "plain",
+          "details": [
+            "white ribbon bow at empire waist",
+            "scoop neckline",
+            "sleeveless",
+            "white stripes at hem",
+            "ribbed knit"
+          ]
+        },
+        "keep": [
+          "black color",
+          "fitted sleeveless silhouette"
+        ],
+        "remove": [
+          "ribbon",
+          "bow"
+        ],
+        "change": {},
+        "add": [],
+        "targetCaption": "a black fitted sleeveless ribbed top with a scoop neckline and a clean plain front",
+        "label": "Top · remove bow + remove ribbon"
+      },
+      "verified": true,
+      "fullMatchCount": 15,
+      "verifierPassRate": 0.9375,
+      "checkPassRate": 0.8125,
+      "latencyMs": 10038,
+      "timings": {
+        "parse": 2184,
+        "retrieve": 88,
+        "verify": 7766,
+        "total": 10038
+      },
+      "matches": [
         "p0631",
+        "p1774",
         "p1082",
-        "p0087",
         "p2088",
         "p0470",
-        "p2626",
-        "p1538",
-        "p2785",
+        "p0087",
         "p1489",
-        "p0257",
-        "p2433",
+        "p0111",
+        "p0212",
+        "p1538",
+        "p0229",
         "p0880",
-        "p0301",
-        "p0577",
+        "p2626",
         "p0920",
         "p0530"
       ],
-      "sameCategoryTop16": 1,
+      "gtMatchPrecision": 1,
       "gtTop16Clean": 0.9375
     },
     {
@@ -73,27 +142,57 @@
       "sourceCaption": "blue top with a bow, one-shoulder, pockets",
       "edit": "this, but without the bow",
       "label": "Top · remove bow",
-      "targetCaption": "blue top, one-shoulder, pockets",
-      "latencyMs": 30,
-      "top16": [
+      "spec": {
+        "source": {
+          "category": "Top",
+          "color": "blue",
+          "pattern": "plain",
+          "details": [
+            "bow at shoulder",
+            "one-shoulder neckline",
+            "peplum hem",
+            "textured fabric"
+          ]
+        },
+        "keep": [
+          "blue color",
+          "peplum silhouette"
+        ],
+        "remove": [
+          "bow"
+        ],
+        "change": {},
+        "add": [],
+        "targetCaption": "a blue one-shoulder peplum top in textured fabric with a clean, plain neckline",
+        "label": "Top · remove bow"
+      },
+      "verified": true,
+      "fullMatchCount": 13,
+      "verifierPassRate": 0.8125,
+      "checkPassRate": 0.59375,
+      "latencyMs": 12647,
+      "timings": {
+        "parse": 2475,
+        "retrieve": 44,
+        "verify": 10128,
+        "total": 12647
+      },
+      "matches": [
         "p1428",
         "p1235",
-        "p2855",
         "p2305",
         "p2903",
+        "p2122",
+        "p2855",
         "p1026",
         "p0579",
-        "p0997",
-        "p0733",
-        "p2090",
-        "p2374",
-        "p1189",
-        "p0741",
-        "p0266",
         "p2949",
-        "p0085"
+        "p2090",
+        "p1774",
+        "p0997",
+        "p2221"
       ],
-      "sameCategoryTop16": 1,
+      "gtMatchPrecision": 1,
       "gtTop16Clean": 0.9375
     },
     {
@@ -101,29 +200,59 @@
       "source": "p0348",
       "sourceCaption": "white three-quarter-sleeve top with a ribbon, pockets",
       "edit": "no ribbon please",
-      "label": "Top · remove ribbon",
-      "targetCaption": "white three-quarter-sleeve top, pockets",
-      "latencyMs": 29,
-      "top16": [
-        "p2949",
-        "p1712",
-        "p1123",
-        "p2222",
-        "p2744",
+      "label": "Top · remove bow + remove ribbon",
+      "spec": {
+        "source": {
+          "category": "Top",
+          "color": "gray",
+          "pattern": "plain",
+          "details": [
+            "pink ribbon bow at neckline",
+            "three-quarter sleeves",
+            "ruffled cuffs",
+            "wide neckline"
+          ]
+        },
+        "keep": [
+          "gray color",
+          "relaxed top silhouette"
+        ],
+        "remove": [
+          "ribbon",
+          "bow"
+        ],
+        "change": {},
+        "add": [],
+        "targetCaption": "a plain gray three-quarter-sleeve top with ruffled cuffs and a clean wide neckline",
+        "label": "Top · remove bow + remove ribbon"
+      },
+      "verified": true,
+      "fullMatchCount": 12,
+      "verifierPassRate": 0.75,
+      "checkPassRate": 0.7,
+      "latencyMs": 12683,
+      "timings": {
+        "parse": 2305,
+        "retrieve": 37,
+        "verify": 10341,
+        "total": 12683
+      },
+      "matches": [
         "p2468",
-        "p1823",
+        "p2955",
+        "p2375",
+        "p2222",
+        "p2949",
         "p1221",
         "p2513",
+        "p0946",
+        "p1712",
+        "p0270",
         "p2785",
-        "p1613",
-        "p0719",
-        "p0752",
-        "p0595",
-        "p1657",
-        "p0946"
+        "p0595"
       ],
-      "sameCategoryTop16": 1,
-      "gtTop16Clean": 0.9375
+      "gtMatchPrecision": 0.9166666666666666,
+      "gtTop16Clean": 0.875
     },
     {
       "id": "bow-top-black",
@@ -131,57 +260,121 @@
       "sourceCaption": "red top with a bow and a ruffle",
       "edit": "without the bow, in black",
       "label": "Top · remove bow + in black",
-      "targetCaption": "black top with a ruffle",
-      "latencyMs": 30,
-      "top16": [
+      "spec": {
+        "source": {
+          "category": "Top",
+          "color": "red",
+          "pattern": "plain",
+          "details": [
+            "black bow at shoulder",
+            "ruffled sleeve",
+            "vertical pintucks",
+            "fitted banded hem",
+            "one-shoulder neckline"
+          ]
+        },
+        "keep": [
+          "fitted silhouette"
+        ],
+        "remove": [
+          "bow"
+        ],
+        "change": {
+          "color": "black"
+        },
+        "add": [],
+        "targetCaption": "a black fitted one-shoulder top with a ruffled sleeve and a plain, clean neckline",
+        "label": "Top · remove bow + in black"
+      },
+      "verified": true,
+      "fullMatchCount": 10,
+      "verifierPassRate": 0.625,
+      "checkPassRate": 0.828125,
+      "latencyMs": 9676,
+      "timings": {
+        "parse": 1918,
+        "retrieve": 62,
+        "verify": 7696,
+        "total": 9676
+      },
+      "matches": [
         "p1130",
-        "p1916",
+        "p1885",
         "p2881",
-        "p0997",
-        "p1669",
-        "p1356",
-        "p0079",
-        "p2021",
         "p1449",
-        "p0794",
-        "p1361",
         "p0263",
-        "p2293",
+        "p1361",
         "p1989",
-        "p1821",
-        "p0344"
+        "p0997",
+        "p1916",
+        "p0079"
       ],
-      "sameCategoryTop16": 0.9375,
-      "gtTop16Clean": 1,
-      "colorTop16": 0.625
+      "gtMatchPrecision": 1,
+      "gtTop16Clean": 1
     },
     {
       "id": "bow-sweater",
       "source": "p0826",
       "sourceCaption": "green long-sleeve knitwear with a bow and beads, crew neck",
       "edit": "without the little bows",
-      "label": "Knitwear · remove bow",
-      "targetCaption": "green long-sleeve knitwear with beads, crew neck",
-      "latencyMs": 84,
-      "top16": [
+      "label": "Knitwear · remove bow + remove bows",
+      "spec": {
+        "source": {
+          "category": "Knitwear",
+          "color": "green",
+          "pattern": "cable knit",
+          "details": [
+            "small bows",
+            "bead embellishments",
+            "crew neck",
+            "open-knit center panel",
+            "ribbed hem and cuffs",
+            "long sleeves"
+          ]
+        },
+        "keep": [
+          "green color",
+          "long-sleeve crew neck sweater silhouette"
+        ],
+        "remove": [
+          "bow",
+          "bows"
+        ],
+        "change": {},
+        "add": [],
+        "targetCaption": "a green long-sleeve crew neck cable-knit sweater with an open-knit center panel and ribbed hem, embellished with beads",
+        "label": "Knitwear · remove bow + remove bows"
+      },
+      "verified": true,
+      "fullMatchCount": 16,
+      "verifierPassRate": 1,
+      "checkPassRate": 0.825,
+      "latencyMs": 11399,
+      "timings": {
+        "parse": 2203,
+        "retrieve": 182,
+        "verify": 9014,
+        "total": 11399
+      },
+      "matches": [
         "p0155",
+        "p2395",
+        "p1546",
         "p0565",
         "p2199",
         "p1644",
-        "p2395",
-        "p1168",
         "p2861",
-        "p0214",
-        "p2982",
         "p2314",
-        "p0036",
+        "p1168",
+        "p1173",
         "p2771",
         "p1201",
-        "p1546",
-        "p0852",
-        "p1924"
+        "p1321",
+        "p2908",
+        "p0214",
+        "p1940"
       ],
-      "sameCategoryTop16": 1,
+      "gtMatchPrecision": 1,
       "gtTop16Clean": 1
     },
     {
@@ -190,28 +383,42 @@
       "sourceCaption": "white long-sleeve shirt",
       "edit": "in black",
       "label": "Shirt · in black",
-      "targetCaption": "black long-sleeve shirt",
-      "latencyMs": 29,
-      "top16": [
-        "p0300",
-        "p2860",
-        "p2235",
-        "p2077",
-        "p2601",
-        "p2081",
-        "p0973",
-        "p1248",
-        "p1651",
-        "p0652",
-        "p2028",
-        "p1762",
-        "p0654",
-        "p2995",
-        "p1358",
-        "p2870"
-      ],
-      "sameCategoryTop16": 1,
-      "colorTop16": 0.125
+      "spec": {
+        "source": {
+          "category": "Shirt",
+          "color": "white",
+          "pattern": "plain",
+          "details": [
+            "band collar",
+            "dark buttons",
+            "long sleeves",
+            "button-up front",
+            "roll-up sleeve tab"
+          ]
+        },
+        "keep": [
+          "long-sleeve button-up shirt silhouette"
+        ],
+        "remove": [],
+        "change": {
+          "color": "black"
+        },
+        "add": [],
+        "targetCaption": "a black long-sleeve button-up shirt with a band collar and a plain finish",
+        "label": "Shirt · in black"
+      },
+      "verified": true,
+      "fullMatchCount": 0,
+      "verifierPassRate": 0,
+      "checkPassRate": 0.5625,
+      "latencyMs": 10799,
+      "timings": {
+        "parse": 1938,
+        "retrieve": 48,
+        "verify": 8813,
+        "total": 10799
+      },
+      "matches": []
     },
     {
       "id": "tee-long-sleeves",
@@ -219,27 +426,45 @@
       "sourceCaption": "black lettering print short-sleeve t-shirt round neck",
       "edit": "longer sleeves",
       "label": "T-shirt · sleeves long",
-      "targetCaption": "black lettering print long-sleeve t-shirt round neck",
-      "latencyMs": 30,
-      "top16": [
-        "p0120",
-        "p0882",
-        "p0329",
-        "p0207",
-        "p2750",
-        "p2372",
-        "p0967",
-        "p0711",
-        "p1448",
-        "p1263",
-        "p1276",
-        "p1521",
+      "spec": {
+        "source": {
+          "category": "T-shirt",
+          "color": "black",
+          "pattern": "lettering print",
+          "details": [
+            "white text print on chest",
+            "short sleeves",
+            "round neckline"
+          ]
+        },
+        "keep": [
+          "black color",
+          "t-shirt silhouette"
+        ],
+        "remove": [],
+        "change": {
+          "sleeves": "long"
+        },
+        "add": [],
+        "targetCaption": "a black long-sleeve t-shirt with a round neckline and a white lettering print on the chest",
+        "label": "T-shirt · sleeves long"
+      },
+      "verified": true,
+      "fullMatchCount": 3,
+      "verifierPassRate": 0.1875,
+      "checkPassRate": 0.59375,
+      "latencyMs": 13124,
+      "timings": {
+        "parse": 1998,
+        "retrieve": 35,
+        "verify": 11091,
+        "total": 13124
+      },
+      "matches": [
         "p1338",
-        "p1179",
-        "p2284",
-        "p2125"
-      ],
-      "sameCategoryTop16": 1
+        "p2372",
+        "p1245"
+      ]
     },
     {
       "id": "dress-under-50",
@@ -247,28 +472,59 @@
       "sourceCaption": "blue floral dress",
       "edit": "under $50",
       "label": "Dress · under $50",
-      "targetCaption": "blue floral dress",
-      "latencyMs": 29,
-      "top16": [
-        "p0960",
-        "p1939",
+      "spec": {
+        "source": {
+          "category": "Dress",
+          "color": "blue",
+          "pattern": "floral",
+          "details": [
+            "sleeveless",
+            "fitted bodice",
+            "full gathered skirt",
+            "sheer overlay",
+            "round neckline"
+          ]
+        },
+        "keep": [
+          "blue color",
+          "fit-and-flare silhouette"
+        ],
+        "remove": [],
+        "change": {},
+        "add": [],
+        "maxPrice": 50,
+        "targetCaption": "a blue floral sleeveless fit-and-flare dress with a full gathered skirt, affordably priced",
+        "label": "Dress · under $50"
+      },
+      "verified": true,
+      "fullMatchCount": 16,
+      "verifierPassRate": 1,
+      "checkPassRate": 0.75,
+      "latencyMs": 13259,
+      "timings": {
+        "parse": 3263,
+        "retrieve": 27,
+        "verify": 9968,
+        "total": 13258
+      },
+      "matches": [
         "p0288",
-        "p2043",
+        "p1939",
         "p1283",
-        "p0267",
-        "p1251",
-        "p0759",
-        "p0485",
         "p0335",
         "p1557",
-        "p0679",
-        "p2633",
+        "p0227",
+        "p0960",
+        "p1251",
         "p0409",
-        "p1725",
-        "p1125"
-      ],
-      "sameCategoryTop16": 0.9375,
-      "underBudgetTop16": true
+        "p1134",
+        "p0267",
+        "p2633",
+        "p0485",
+        "p0759",
+        "p2043",
+        "p0991"
+      ]
     },
     {
       "id": "skirt-shorter-navy",
@@ -276,28 +532,47 @@
       "sourceCaption": "black a-line midi skirt",
       "edit": "shorter and in navy",
       "label": "Skirt · in navy + shorter",
-      "targetCaption": "navy a-line midi skirt",
-      "latencyMs": 29,
-      "top16": [
-        "p1324",
-        "p1608",
-        "p0370",
-        "p1421",
-        "p2495",
+      "spec": {
+        "source": {
+          "category": "Skirt",
+          "color": "black",
+          "pattern": "plain",
+          "details": [
+            "a-line silhouette",
+            "midi length",
+            "smooth fabric"
+          ]
+        },
+        "keep": [
+          "a-line silhouette"
+        ],
+        "remove": [],
+        "change": {
+          "length": "shorter",
+          "color": "navy"
+        },
+        "add": [],
+        "targetCaption": "a navy blue plain a-line mini skirt with a short hemline",
+        "label": "Skirt · in navy + shorter"
+      },
+      "verified": true,
+      "fullMatchCount": 5,
+      "verifierPassRate": 0.3125,
+      "checkPassRate": 0.6875,
+      "latencyMs": 12752,
+      "timings": {
+        "parse": 3488,
+        "retrieve": 40,
+        "verify": 9224,
+        "total": 12752
+      },
+      "matches": [
         "p1405",
-        "p2210",
         "p2253",
-        "p1097",
-        "p2317",
         "p1850",
-        "p2349",
-        "p0071",
-        "p1061",
-        "p2934",
-        "p2498"
-      ],
-      "sameCategoryTop16": 1,
-      "colorTop16": 0.1875
+        "p1804",
+        "p1421"
+      ]
     }
   ]
 }

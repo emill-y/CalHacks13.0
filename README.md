@@ -89,7 +89,10 @@ caption describes what the item *is*.
   `Candidate <id>` + image pairs. Each call returns strict JSON
   `{id, checks:[{text, pass, reason≤12 words}], similarity 0–10}`.
 * Model output is aligned to the expected checks, and any check the model skipped counts as a **fail**.
-  `allPass = every check passed`.
+  `allPass` = every **edit** check passed (garment type, remove, change, add, price). Implicit `keeps <x>` checks are
+  soft: they're shown as "≈ differs" chips and affect ranking, but never disqualify a result. (The first eval run made
+  keeps mandatory, and the parser's over-specific keeps such as "daisy floral pattern" left the hero query with 0
+  matches.)
 * Ranking: allPass, then pass count, then similarity, then retrieval score.
 * **Hard rule:** only `allPass` results are shown as **Matches**. If verification errors or exceeds **25 s**, results
   come back in retrieval order marked *unverified*, and none are labeled matches.
@@ -112,11 +115,22 @@ one combined with "in black"), color, sleeves, price, and length + color. Each q
 pass rate, check pass rate, and latency, plus a **ground-truth precision** score: Fashionpedia's human part annotations
 say whether a "without the bow" match really has no annotated bow. Output is saved to `eval-results.json`.
 
-Without `ANTHROPIC_API_KEY`, the eval runs in **retrieval-only** mode. The latest run in this repo is retrieval-only,
-because the build sandbox had no API key:
+Latest full run (`claude-sonnet-5-5`, effort low, 10 queries, see `eval-results.json`):
 
-| metric (retrieval-only, 10 queries) | value |
+| metric | value |
 |---|---|
+| **hero**: bow blouse + "without the bow" | **10 verified matches in 13.1 s** |
+| queries with ≥ 3 full matches | 9 / 10 |
+| total full matches | 100 |
+| matches whose Fashionpedia annotations confirm the removed part is absent | **98.6%** |
+| verifier pass rate (verified candidates passing every edit) | 62.5% |
+| median end-to-end latency (parse + retrieve + verify) | 12.7 s |
+| retrieval alone (warm, brute force over 3,000) | ~30 ms |
+
+Without `ANTHROPIC_API_KEY`, the eval runs in retrieval-only mode. The script exits non-zero if the hero query returns
+fewer than 3 matches or takes 15 s or more.
+
+---|---|
 | top-16 free of the removed part (annotation ground truth, 6 removal queries) | **96.9%** |
 | top-16 in the source's category | **98.8%** |
 | median retrieval latency (warm) | **30 ms** |
