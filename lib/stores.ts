@@ -27,10 +27,13 @@ interface StoreItem {
   jpeg: Buffer;
 }
 
+/** Where a store's products came from. Everything but "page" is a whole-store catalog keyed by host. */
+export type StoreKind = "shopify" | "woocommerce" | "sitemap" | "catalog" | "page";
+
 export interface StoreCatalog {
   id: string;
   origin: string;
-  kind: "shopify" | "page";
+  kind: StoreKind;
   products: Product[];
   embeddings: Float32Array;
   items: Map<string, StoreItem>;
@@ -42,9 +45,9 @@ const DIR = path.join(process.cwd(), ".data", "stores");
 const g = globalThis as unknown as { __stores?: Map<string, StoreCatalog> };
 const mem = (g.__stores ??= new Map());
 
-export function storeIdFor(origin: string, kind: "shopify" | "page", pageUrl?: string): string {
+export function storeIdFor(origin: string, kind: StoreKind, pageUrl?: string): string {
   const host = new URL(origin).host.toLowerCase();
-  if (kind === "shopify") return host;
+  if (kind !== "page") return host;
   const p = pageUrl ? new URL(pageUrl) : null;
   const key = p ? `${p.pathname}${p.search}` : "/";
   return `${host}~page-${crypto.createHash("sha1").update(key).digest("hex").slice(0, 10)}`;
@@ -178,7 +181,7 @@ async function pool<T, R>(xs: T[], n: number, fn: (x: T, i: number) => Promise<R
  * same CLIP model as the built-in catalog, drop non-apparel, and cache to .data/stores.
  */
 export async function indexStore(
-  input: { origin: string; kind: "shopify" | "page"; pageUrl?: string; items: StoreItemInput[] },
+  input: { origin: string; kind: StoreKind; pageUrl?: string; items: StoreItemInput[] },
   onProgress: (done: number, total: number) => void = () => {},
 ): Promise<{ catalog: StoreCatalog; added: number; reused: number; skipped: number }> {
   const id = storeIdFor(input.origin, input.kind, input.pageUrl);

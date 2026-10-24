@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { errorPayload } from "@/lib/search";
-import { getStoreCatalog, indexStore, MAX_STORE_ITEMS, storeIdFor } from "@/lib/stores";
+import { getStoreCatalog, indexStore, MAX_STORE_ITEMS, storeIdFor, type StoreKind } from "@/lib/stores";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ const Item = z.object({
 });
 const Body = z.object({
   origin: z.string().url(),
-  kind: z.enum(["shopify", "page"]),
+  kind: z.enum(["shopify", "woocommerce", "sitemap", "catalog", "page"]),
   pageUrl: z.string().url().optional(),
   items: z.array(Item).max(MAX_STORE_ITEMS * 2),
 });
@@ -25,9 +25,9 @@ const Body = z.object({
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
   try {
-    const id = storeIdFor(sp.get("origin")!, (sp.get("kind") as "shopify" | "page") ?? "shopify", sp.get("pageUrl") ?? undefined);
+    const id = storeIdFor(sp.get("origin")!, (sp.get("kind") as StoreKind) ?? "catalog", sp.get("pageUrl") ?? undefined);
     const c = await getStoreCatalog(id);
-    return Response.json({ storeId: id, indexed: Boolean(c), count: c?.products.length ?? 0, updatedAt: c?.updatedAt ?? null });
+    return Response.json({ storeId: id, indexed: Boolean(c), kind: c?.kind ?? null, count: c?.products.length ?? 0, updatedAt: c?.updatedAt ?? null });
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 400 });
   }

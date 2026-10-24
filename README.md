@@ -43,8 +43,9 @@ Scripts: `npm run dev | build | start | test | lint | eval | embed | typecheck`.
 ## Browser extension: use ThisBut on any store
 
 `extension/` is a Chrome/Edge MV3 extension. Hover any product photo on any site and click **This, but…** (or
-right-click → **This, but…**). A side panel searches **the store you're on**: on Shopify stores like Edikted it indexes
-the store's public `/products.json`; on any other site it indexes the product images on the page. Every result is
+right-click → **This, but…**). A side panel searches **the store you're on**, finding its whole catalog through Shopify
+`/products.json`, the WooCommerce Store API, or the store's sitemap plus schema.org Product pages, in that order. If
+none of those work, it uses the products on the current page. Every result is
 verified, and clicking one opens it on the store's site.
 
 Install: run the server, open `chrome://extensions`, turn on Developer mode, click **Load unpacked**, and pick the

@@ -86,45 +86,7 @@
     chrome.runtime.sendMessage({ type: "thisbut:source", imageUrl: bestSrc(current), title: productTitle(current), pageUrl: location.href });
   });
 
-  // --- product collection for the side panel ---
-  function shopifyImage(src) {
-    try {
-      const u = new URL(src, location.origin);
-      if (u.hostname.includes("shopify") || u.pathname.includes("/files/") || u.pathname.includes("/products/")) u.searchParams.set("width", "600");
-      return u.href;
-    } catch {
-      return src;
-    }
-  }
-
-  async function shopifyProducts(max) {
-    const out = [];
-    for (let page = 1; out.length < max && page <= 10; page++) {
-      const res = await fetch(`/products.json?limit=250&page=${page}`, { credentials: "omit" });
-      if (!res.ok) break;
-      const type = res.headers.get("content-type") || "";
-      if (!type.includes("json")) break;
-      const data = await res.json();
-      if (!Array.isArray(data.products) || data.products.length === 0) break;
-      for (const p of data.products) {
-        const img = p.images?.[0]?.src;
-        if (!img) continue;
-        const colorOpt = (p.options || []).find((o) => /colou?r/i.test(o.name));
-        const price = parseFloat(p.variants?.[0]?.price);
-        out.push({
-          id: String(p.id),
-          title: p.title || "",
-          price: Number.isFinite(price) ? price : null,
-          image: shopifyImage(img),
-          url: `${location.origin}/products/${p.handle}`,
-          color: colorOpt?.values?.[0] || undefined,
-        });
-        if (out.length >= max) break;
-      }
-    }
-    return out;
-  }
-
+  // --- products visible on this page (the side panel adds the whole-store catalog) ---
   function hash(s) {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
@@ -163,15 +125,11 @@
       return false;
     }
     if (msg?.type !== "thisbut:collect") return false;
-    (async () => {
-      const max = msg.max || 400;
-      let items = [];
-      try {
-        items = await shopifyProducts(max);
-      } catch {}
-      if (items.length) return { kind: "shopify", origin: location.origin, pageUrl: location.href, items };
-      return { kind: "page", origin: location.origin, pageUrl: location.href, items: pageProducts(Math.min(max, 120)) };
-    })().then(reply, (e) => reply({ error: String(e) }));
-    return true; // async reply
+    try {
+      reply({ kind: "page", origin: location.origin, pageUrl: location.href, items: pageProducts(Math.min(msg.max || 120, 200)) });
+    } catch (e) {
+      reply({ error: String(e) });
+    }
+    return false;
   });
 })();

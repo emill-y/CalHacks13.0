@@ -5,6 +5,14 @@ const $ = (id) => document.getElementById(id);
 const EXAMPLES = ["without the ribbon", "in black", "longer sleeves", "under $50"];
 const DEFAULTS = { serverUrl: "http://localhost:3000", maxItems: 400 };
 
+const KIND_LABEL = {
+  shopify: "Shopify catalog",
+  woocommerce: "WooCommerce catalog",
+  sitemap: "Store catalog",
+  catalog: "Store catalog",
+  page: "Products on this page",
+};
+
 const state = {
   tabId: null,
   tabUrl: "",
@@ -174,21 +182,21 @@ async function refreshStoreStatus() {
   $("storeStatus").textContent = "Checking this store…";
   try {
     const origin = new URL(state.source.pageUrl || state.tabUrl).origin;
-    // Prefer the Shopify-wide catalog if one is cached for this host.
-    for (const kind of ["shopify", "page"]) {
+    // Prefer a whole-store catalog cached for this host, else one for this page.
+    for (const kind of ["catalog", "page"]) {
       const q = new URLSearchParams({ origin, kind, pageUrl: state.source.pageUrl || state.tabUrl });
       const r = await fetch(server(`/api/stores/index?${q}`));
       const j = await r.json();
       if (j.indexed && j.count > 0) {
-        state.store = { storeId: j.storeId, count: j.count, kind, origin };
+        state.store = { storeId: j.storeId, count: j.count, kind: j.kind || kind, origin };
         $("storeStatus").replaceChildren(
-          `${kind === "shopify" ? "Store catalog" : "Products on this page"}: ${j.count} items indexed · `,
+          `${KIND_LABEL[j.kind] || KIND_LABEL[kind]}: ${j.count} items indexed · `,
           el("button", { class: "link small", onclick: () => indexStore(true) }, "refresh"),
         );
         return;
       }
     }
-    $("storeStatus").textContent = "This store isn’t indexed yet — it will be indexed on your first search (≈10–40 s, then cached).";
+    $("storeStatus").textContent = "This store isn’t indexed yet — it will be indexed on your first search (≈20–90 s the first time, then cached).";
   } catch {
     $("storeStatus").textContent = `Can’t reach the ThisBut server at ${settings.serverUrl}. Open ⚙ to set it.`;
   }
@@ -196,11 +204,35 @@ async function refreshStoreStatus() {
 
 async function indexStore(force = false) {
   if (state.store && !force) return state.store;
-  $("storeStatus").textContent = "Collecting products from this store…";
-  const collected = await sendToTab({ type: "thisbut:collect", max: settings.maxItems });
-  if (!collected || collected.error) throw new Error(`Couldn’t read products from this page${collected?.error ? `: ${collected.error}` : ""}`);
-  if (!collected.items.length) throw new Error("No product photos found on this page.");
-  $("storeStatus").textContent = `${collected.kind === "shopify" ? "Shopify catalog" : "Page"}: indexing ${collected.items.length} products…`;
+  const status = (t) => ($("storeStatus").textContent = t);
+  const pageUrl = state.source?.pageUrl || state.tabUrl;
+  const origin = new URL(pageUrl).origin;
+
+  // Products visible on this page (always included, so what the shopper sees is searchable).
+  status("Collecting products on this page…");
+  let pageItems = [];
+  try {
+    const got = await sendToTab({ type: "thisbut:collect", max: 120 });
+    pageItems = got?.items || [];
+  } catch {}
+
+  // The whole store: Shopify → WooCommerce → sitemap + product pages.
+  const catalog = await collectStoreCatalog({ origin, pageUrl, title: state.source?.title, max: settings.maxItems, onStatus: status });
+  const seen = new Set();
+  const key = (u) => {
+    try {
+      const x = new URL(u);
+      return x.host + x.pathname; // same photo at a different size (?width=…) is the same product
+    } catch {
+      return u;
+    }
+  };
+  const merge = (xs) => xs.filter((i) => i.image && !seen.has(key(i.image)) && seen.add(key(i.image)));
+  const collected = catalog
+    ? { kind: catalog.kind, origin, pageUrl, items: [...merge(catalog.items), ...merge(pageItems)] }
+    : { kind: "page", origin, pageUrl, items: merge(pageItems) };
+  if (!collected.items.length) throw new Error("No product photos found on this page or in this store’s catalog.");
+  status(`${KIND_LABEL[collected.kind]}: indexing ${collected.items.length} products…`);
   show("indexBar", true);
   const res = await fetch(server("/api/stores/index"), {
     method: "POST",
@@ -218,7 +250,7 @@ async function indexStore(force = false) {
   if (!result) throw new Error("Indexing ended unexpectedly");
   state.store = { storeId: result.storeId, count: result.count, kind: collected.kind, origin: collected.origin };
   $("storeStatus").replaceChildren(
-    `${collected.kind === "shopify" ? "Store catalog" : "Products on this page"}: ${result.count} clothing items indexed (${result.skipped} skipped) · `,
+    `${KIND_LABEL[collected.kind]}: ${result.count} clothing items indexed (${result.skipped} skipped) · `,
     el("button", { class: "link small", onclick: () => indexStore(true) }, "refresh"),
   );
   return state.store;
