@@ -40,6 +40,23 @@ Scripts: `npm run dev | build | start | test | lint | eval | embed | typecheck`.
 
 ---
 
+## Browser extension: use ThisBut on any store
+
+`extension/` is a Chrome/Edge MV3 extension. Hover any product photo on any site and click **This, but…** (or
+right-click → **This, but…**). A side panel searches **the store you're on**: on Shopify stores like Edikted it indexes
+the store's public `/products.json`; on any other site it indexes the product images on the page. Every result is
+verified, and clicking one opens it on the store's site.
+
+Install: run the server, open `chrome://extensions`, turn on Developer mode, click **Load unpacked**, and pick the
+`extension/` folder. Details are in [`extension/README.md`](extension/README.md).
+
+How it works: the content script collects products. `POST /api/stores/index` downloads each photo, embeds it with the
+same CLIP model, keeps clothing only (title keywords first, CLIP zero-shot otherwise), and caches the store in
+`.data/stores/`. `POST /api/search` then accepts `imageUrl` + `store`, and the same parse → retrieve → verify pipeline
+runs against that store's catalog. Server-side image fetching only accepts public http(s) hosts.
+
+---
+
 ## Architecture
 
 ```

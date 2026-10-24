@@ -6,6 +6,10 @@ export interface Product {
   price: number;
   image: string;
   caption: string;
+  /** Product page on the merchant's own site (store catalogs indexed by the browser extension). */
+  url?: string;
+  /** Store catalog id this product belongs to; absent for the built-in catalog. */
+  store?: string;
 }
 
 export interface EditSpec {

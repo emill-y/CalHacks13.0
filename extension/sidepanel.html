@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ThisBut</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">This<span>But</span></div>
+    <button id="settingsBtn" class="ghost" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <section id="settings" hidden>
+    <label>Server URL <input id="serverUrl" placeholder="http://localhost:3000" /></label>
+    <label>Max store products to index <input id="maxItems" type="number" min="20" max="600" /></label>
+    <div class="row"><button id="saveSettings">Save</button><span id="health" class="muted small"></span></div>
+  </section>
+
+  <main>
+    <div id="empty" class="empty">
+      <h1>This, <em>but…</em></h1>
+      <p>Hover any product photo and click <b>This, but…</b> — or right-click an image → <b>This, but…</b>.</p>
+      <p class="muted small">Works on any shop. On Shopify stores it searches that store’s whole catalog; elsewhere, the products on the page.</p>
+    </div>
+
+    <div id="sourceCard" class="source" hidden>
+      <img id="sourceImg" alt="Selected product" />
+      <div>
+        <div class="muted small" id="sourceHost"></div>
+        <div id="sourceTitle" class="title"></div>
+        <button id="clearSource" class="link small">clear</button>
+      </div>
+    </div>
+
+    <div id="scope" class="seg" hidden>
+      <button data-scope="store" id="scopeStore" class="on">This store</button>
+      <button data-scope="catalog" id="scopeCatalog">ThisBut catalog</button>
+    </div>
+    <div id="storeStatus" class="muted small" hidden></div>
+    <div id="indexBar" class="bar" hidden><div></div></div>
+
+    <form id="editForm" hidden>
+      <textarea id="edit" rows="2" placeholder="…but without the ribbon"></textarea>
+      <div class="chips" id="examples"></div>
+      <button type="submit" id="findBtn" class="primary">Find it</button>
+    </form>
+
+    <ol id="steps" class="steps" hidden>
+      <li data-k="parse">Understanding your item</li>
+      <li data-k="retrieve">Applying your edits</li>
+      <li data-k="verify">Checking 16 candidates</li>
+    </ol>
+    <div id="error" class="error" hidden></div>
+
+    <div id="results" hidden>
+      <div class="specrow"><span class="label">Your edits</span><span id="specChips"></span></div>
+      <div class="meta small"><span id="discarded" class="ok"></span><span id="timing" class="muted"></span></div>
+      <div id="unverified" class="notice" hidden>The checker didn’t finish in time — showing similar items, none labeled as matches.</div>
+      <h2>Matches <span id="matchCount" class="muted"></span></h2>
+      <p class="muted small">Passed every edit you asked for</p>
+      <div id="matches" class="grid"></div>
+      <div id="wish"></div>
+      <h2 id="closeTitle">Close, but…</h2>
+      <div id="close" class="grid"></div>
+      <form id="refineForm" class="refine">
+        <input id="refine" placeholder="Refine: “now shorter”, “in navy”…" />
+        <button>Refine</button>
+      </form>
+    </div>
+  </main>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

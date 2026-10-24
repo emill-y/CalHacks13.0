@@ -91,18 +91,31 @@ export function normAttr(s: string): string {
 }
 
 export function canonicalCategory(raw: string): Category {
+  return categoryFromText(raw) ?? "Top";
+}
+
+/** Category named in free text (product titles), or null if none is recognizable. */
+export function categoryFromText(raw: string): Category | null {
   const t = raw.toLowerCase();
-  if (/t-?shirt|\btee\b/.test(t)) return "T-shirt";
+  if (/\bt-?shirt|\btee\b/.test(t)) return "T-shirt";
   if (/jean|denim pant/.test(t)) return "Jeans";
   if (/dress|gown/.test(t)) return "Dress";
   if (/skirt/.test(t)) return "Skirt";
   if (/jacket|coat|blazer|parka|bomber/.test(t)) return "Jacket";
+  if (/trouser|pant|chino|legging|jogger|shorts/.test(t)) return "Trousers"; // before knit: "knit pants"
   if (/sweater|knit|cardigan|jumper|pullover|hoodie|sweatshirt/.test(t)) return "Knitwear";
-  if (/trouser|pant|chino|legging|jogger|shorts/.test(t)) return "Trousers";
   if (/blouse/.test(t)) return "Blouse";
   if (/shirt/.test(t)) return "Shirt";
-  const exact = CATEGORIES.find((c) => c.toLowerCase() === t.trim());
-  return exact ?? "Top";
+  if (/skort/.test(t)) return "Skirt";
+  if (/\b(top|tank|cami|camisole|corset|bustier|bodysuit|halter|tube|bralette|crop)\b/.test(t)) return "Top";
+  return CATEGORIES.find((c) => c.toLowerCase() === t.trim()) ?? null;
+}
+
+/** Titles that are clearly not apparel (dropped from store catalogs). */
+export function isNonApparelTitle(raw: string): boolean {
+  return /\b(bracelet|necklace|earrings?|ring|anklet|jewel|bag|purse|tote|wallet|shoes?|boots?|sandals?|sneakers?|heels|sunglasses|glasses|hat|cap|beanie|belt|socks?|gift ?card|phone|case|candle|perfume|fragrance|keychain|hair ?clip|scrunchie)\b/i.test(
+    raw,
+  );
 }
 
 const RELATIVE = new Set(["longer", "shorter", "looser", "tighter"]);

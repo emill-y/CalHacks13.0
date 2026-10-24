@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { EMBED_DIM } from "./clip";
 import { getStore } from "./store";
+import { getStoreImage } from "./stores";
 import type { Product } from "./types";
 
 export class CatalogError extends Error {
@@ -80,6 +81,7 @@ export async function addToCatalog(product: Product, embedding: Float32Array) {
 
 /** Reads a local catalog image (for sending product photos to the verifier). */
 export async function readProductImage(p: Product): Promise<Buffer> {
+  if (p.store) return getStoreImage(p);
   if (p.image.startsWith("/catalog/")) {
     return fs.promises.readFile(path.join(process.cwd(), "public", p.image));
   }

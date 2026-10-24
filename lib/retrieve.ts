@@ -44,19 +44,19 @@ export function scoreOne(
 export async function retrieve(
   spec: EditSpec,
   vImg: Float32Array | null,
-  opts: { k?: number; excludeId?: string } = {},
+  opts: { k?: number; excludeId?: string; catalog?: { products: Product[]; embeddings: Float32Array } } = {},
 ): Promise<Scored[]> {
   const k = opts.k ?? 40;
   const [vText, ...vRemove] = await embedTexts([
     `a product photo of ${spec.targetCaption}`,
     ...spec.remove.map((r) => `a photo of clothing with a ${r}`),
   ]);
-  const { products, embeddings } = await getCatalog();
+  const { products, embeddings } = opts.catalog ?? (await getCatalog());
   const cat = canonicalCategory(spec.source.category);
   const out: Scored[] = [];
   for (let i = 0; i < products.length; i++) {
     const p = products[i];
-    if (spec.maxPrice && p.price > spec.maxPrice) continue; // hard filter
+    if (spec.maxPrice && (p.price < 0 || p.price > spec.maxPrice)) continue; // hard filter (price < 0 = unknown)
     if (p.id === opts.excludeId) continue;
     out.push({ product: p, idx: i, score: scoreOne(embeddings, i * EMBED_DIM, vImg, vText, vRemove, p.category === cat) });
   }

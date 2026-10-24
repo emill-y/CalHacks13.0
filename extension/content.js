@@ -1,0 +1,177 @@
+// ThisBut content script: a "This, but…" button on hovered product photos, and product collection
+// (Shopify /products.json when available, otherwise the product images on the current page).
+(() => {
+  if (window.__thisbut) return;
+  window.__thisbut = true;
+
+  const MIN_SIDE = 140;
+  let current = null;
+
+  // --- floating button (shadow DOM so site CSS can't touch it) ---
+  const host = document.createElement("div");
+  host.style.cssText = "position:fixed;z-index:2147483647;top:0;left:0;display:none;";
+  const root = host.attachShadow({ mode: "closed" });
+  root.innerHTML = `<style>
+    button{all:initial;font:600 13px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;
+      background:#141414;color:#fff;border-radius:999px;padding:9px 13px 9px 11px;box-shadow:0 6px 20px rgba(0,0,0,.28);
+      display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:transform .12s ease}
+    button:hover{transform:scale(1.05)} i{font-style:italic;color:#ff6a3d;font-family:Georgia,serif;font-size:14px}
+  </style><button type="button" title="Find this with your edits — ThisBut"><span>This,</span><i>but…</i></button>`;
+  const btn = root.querySelector("button");
+  (document.body || document.documentElement).appendChild(host);
+
+  function bestSrc(img) {
+    const src = img.currentSrc || img.src || "";
+    if (!/^https?:/.test(src)) return "";
+    return src;
+  }
+
+  function productTitle(img) {
+    const card = img.closest("a, li, article, [class*=product i], [class*=card i]");
+    const fromCard = card?.querySelector("h1,h2,h3,h4,[class*=title i],[class*=name i]")?.textContent?.trim();
+    const og = document.querySelector('meta[property="og:title"]')?.content;
+    const h1 = document.querySelector("h1")?.textContent?.trim();
+    return (fromCard || img.alt || h1 || og || document.title || "").replace(/\s+/g, " ").slice(0, 200);
+  }
+
+  function imgAt(x, y) {
+    for (const el of document.elementsFromPoint(x, y)) {
+      if (el === host) return null;
+      const img = el.tagName === "IMG" ? el : el.querySelector?.(":scope > img, :scope > picture > img");
+      if (img && img.tagName === "IMG") {
+        const r = img.getBoundingClientRect();
+        if (r.width >= MIN_SIDE && r.height >= MIN_SIDE && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom && bestSrc(img)) return img;
+      }
+    }
+    return null;
+  }
+
+  function place(img) {
+    const r = img.getBoundingClientRect();
+    host.style.left = `${Math.max(4, r.right - 128)}px`;
+    host.style.top = `${Math.max(4, r.top + 10)}px`;
+    host.style.display = "block";
+  }
+
+  let raf = 0;
+  document.addEventListener(
+    "mousemove",
+    (e) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (e.composedPath().includes(host)) return;
+        const img = imgAt(e.clientX, e.clientY);
+        if (img) {
+          current = img;
+          place(img);
+        } else if (current) {
+          const r = current.getBoundingClientRect();
+          const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+          if (!inside) {
+            current = null;
+            host.style.display = "none";
+          }
+        }
+      });
+    },
+    { passive: true },
+  );
+  window.addEventListener("scroll", () => current && place(current), { passive: true });
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!current) return;
+    chrome.runtime.sendMessage({ type: "thisbut:source", imageUrl: bestSrc(current), title: productTitle(current), pageUrl: location.href });
+  });
+
+  // --- product collection for the side panel ---
+  function shopifyImage(src) {
+    try {
+      const u = new URL(src, location.origin);
+      if (u.hostname.includes("shopify") || u.pathname.includes("/files/") || u.pathname.includes("/products/")) u.searchParams.set("width", "600");
+      return u.href;
+    } catch {
+      return src;
+    }
+  }
+
+  async function shopifyProducts(max) {
+    const out = [];
+    for (let page = 1; out.length < max && page <= 10; page++) {
+      const res = await fetch(`/products.json?limit=250&page=${page}`, { credentials: "omit" });
+      if (!res.ok) break;
+      const type = res.headers.get("content-type") || "";
+      if (!type.includes("json")) break;
+      const data = await res.json();
+      if (!Array.isArray(data.products) || data.products.length === 0) break;
+      for (const p of data.products) {
+        const img = p.images?.[0]?.src;
+        if (!img) continue;
+        const colorOpt = (p.options || []).find((o) => /colou?r/i.test(o.name));
+        const price = parseFloat(p.variants?.[0]?.price);
+        out.push({
+          id: String(p.id),
+          title: p.title || "",
+          price: Number.isFinite(price) ? price : null,
+          image: shopifyImage(img),
+          url: `${location.origin}/products/${p.handle}`,
+          color: colorOpt?.values?.[0] || undefined,
+        });
+        if (out.length >= max) break;
+      }
+    }
+    return out;
+  }
+
+  function hash(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+
+  function pageProducts(max) {
+    const seen = new Set();
+    const out = [];
+    for (const img of document.images) {
+      const r = img.getBoundingClientRect();
+      const src = bestSrc(img);
+      const w = Math.max(r.width, img.naturalWidth ? Math.min(img.naturalWidth, 600) : 0);
+      const h = Math.max(r.height, img.naturalHeight ? Math.min(img.naturalHeight, 600) : 0);
+      if (!src || w < 120 || h < 120 || seen.has(src)) continue;
+      seen.add(src);
+      const link = img.closest("a[href]");
+      const card = img.closest("li, article, [class*=product i], [class*=card i], [class*=item i]") || link || img.parentElement;
+      const text = (card?.innerText || "").replace(/\s+/g, " ");
+      const m = text.match(/(?:\$|€|£)\s?(\d{1,4}(?:[.,]\d{2})?)/);
+      out.push({
+        id: hash(src),
+        title: (card?.querySelector("h2,h3,h4,[class*=title i],[class*=name i]")?.textContent || img.alt || "").trim().slice(0, 200),
+        price: m ? parseFloat(m[1].replace(",", ".")) : null,
+        image: src,
+        url: link ? link.href : location.href,
+      });
+      if (out.length >= max) break;
+    }
+    return out;
+  }
+
+  chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
+    if (msg?.type === "thisbut:ping") {
+      reply({ ok: true });
+      return false;
+    }
+    if (msg?.type !== "thisbut:collect") return false;
+    (async () => {
+      const max = msg.max || 400;
+      let items = [];
+      try {
+        items = await shopifyProducts(max);
+      } catch {}
+      if (items.length) return { kind: "shopify", origin: location.origin, pageUrl: location.href, items };
+      return { kind: "page", origin: location.origin, pageUrl: location.href, items: pageProducts(Math.min(max, 120)) };
+    })().then(reply, (e) => reply({ error: String(e) }));
+    return true; // async reply
+  });
+})();

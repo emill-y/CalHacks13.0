@@ -16,6 +16,9 @@ const Body = z.object({
   editText: z.string().max(500).default(""),
   priorSpec: EditSpecSchema.optional(),
   spec: EditSpecSchema.optional(),
+  imageUrl: z.string().url().max(4000).optional(),
+  sourceTitle: z.string().max(300).optional(),
+  store: z.string().max(200).optional(),
 });
 
 export async function POST(req: Request) {
@@ -25,8 +28,8 @@ export async function POST(req: Request) {
   } catch (e) {
     return Response.json({ error: `Bad request: ${(e as Error).message.slice(0, 200)}` }, { status: 400 });
   }
-  if (!body.image && !body.productId) {
-    return Response.json({ error: "Provide an image or a productId." }, { status: 400 });
+  if (!body.image && !body.productId && !body.imageUrl) {
+    return Response.json({ error: "Provide an image, an imageUrl or a productId." }, { status: 400 });
   }
 
   const enc = new TextEncoder();

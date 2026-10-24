@@ -2,6 +2,8 @@ import sharp from "sharp";
 import { hasApiKey, ModelError, type ImageInput } from "./anthropic";
 import { CatalogError, getEmbedding, getProduct, readProductImage } from "./catalog";
 import { embedImage } from "./clip";
+import { fetchImageJpeg } from "./fetchImage";
+import { getStoreCatalog } from "./stores";
 import { parseEdit } from "./parse";
 import { retrieve } from "./retrieve";
 import { canonicalLabel } from "./spec";
@@ -16,6 +18,12 @@ export interface SearchInput {
   priorSpec?: EditSpec;
   /** Skip parsing and use this spec (e.g. after removing a chip). */
   spec?: EditSpec;
+  /** Public image URL (browser extension: the product photo the shopper clicked). */
+  imageUrl?: string;
+  /** Title of the clicked product, used as extra context for parsing. */
+  sourceTitle?: string;
+  /** Search this store catalog (indexed by the extension) instead of the built-in one. */
+  store?: string;
 }
 
 const MEDIA = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -44,6 +52,11 @@ export async function runSearch(
     source = { data: (await readProductImage(p)).toString("base64"), mediaType: "image/jpeg" };
     sourceCaption = p.caption;
     vImgPromise = getEmbedding(p.id).then((v) => v ?? null);
+  } else if (input.imageUrl) {
+    const buf = await fetchImageJpeg(input.imageUrl, 768);
+    source = { data: buf.toString("base64"), mediaType: "image/jpeg" };
+    sourceCaption = input.sourceTitle;
+    vImgPromise = embedImage(buf);
   } else if (input.image) {
     let buf: Buffer = Buffer.from(input.image, "base64");
     if (buf.length > 8 * 1024 * 1024) throw new Error("Image too large (max 8 MB).");
@@ -52,8 +65,11 @@ export async function runSearch(
     source = { data: buf.toString("base64"), mediaType: "image/jpeg" };
     vImgPromise = embedImage(buf);
   } else {
-    throw new Error("Provide an image or a productId.");
+    throw new Error("Provide an image, an imageUrl or a productId.");
   }
+  const storeCatalog = input.store ? await getStoreCatalog(input.store) : undefined;
+  if (input.store && !storeCatalog) throw new CatalogError(`Store catalog ${input.store} isn't indexed yet.`);
+  if (storeCatalog && storeCatalog.products.length === 0) throw new CatalogError("No clothing products were found in this store catalog.");
   if (input.mediaType && !MEDIA.has(input.mediaType)) throw new Error("Unsupported image type.");
   vImgPromise.catch(() => {}); // surfaced below
 
@@ -67,7 +83,9 @@ export async function runSearch(
   timings.parse = Date.now() - t0;
 
   const vImg = await vImgPromise;
-  const scored = await retrieve(spec, vImg, { excludeId: input.productId });
+  // Never return the item the shopper started from (store catalogs: same photo URL).
+  const excludeId = input.productId ?? storeCatalog?.products.find((p) => p.image === input.imageUrl)?.id;
+  const scored = await retrieve(spec, vImg, { excludeId, catalog: storeCatalog });
   timings.retrieve = Date.now() - t0 - timings.parse;
   emit({ stage: "retrieve", count: scored.length });
 
@@ -86,7 +104,7 @@ export async function runSearch(
     nearestProductId: scored[0]?.product.id ?? null,
     verified,
     timings,
-    photoDiscarded: Boolean(input.image),
+    photoDiscarded: Boolean(input.image || input.imageUrl),
   };
   emit(done);
   return done;
